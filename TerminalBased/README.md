@@ -135,6 +135,6 @@ This project is licensed under the MIT License.
 
 ## 🙋‍♂️ Author
 
-**Parampreet Singh**
+**PRIYANSHU MITTAL**
 Feel free to contribute or report issues!
 
