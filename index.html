@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cache Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Add this line -->
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Cache Simulator</h1>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-input">
+                <label for="theme-switch" class="theme-label">
+                    <span class="toggle-track">
+                        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </span>
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="simulation-trigger-section" style="text-align:center; margin: 1.5em 0;">
+            <label id="show-simulation-btn" class="submit-btn" style="font-size:20px;padding:0.7em 0.2em;">
+                Cache Access Analysis: Hit, Miss, and Hit Ratio Explained
+            </label>
+        </section>
+        <section class="stats-panel">
+            <div class="stat-card">
+                <h3>Cache Hits</h3>
+                <p class="stat-value hit">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Cache Misses</h3>
+                <p class="stat-value miss">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Hit Ratio</h3>
+                <p class="stat-value ratio">0%</p>
+            </div>
+        </section>
+
+    <div class="control-animation-wrapper">
+    <!-- Upload UI on the left -->
+        <section class="control-panel">
+            <div class="file-ttl-box">
+                <!-- File Section -->
+                <div class="file-input">
+                    <input type="file" id="file-upload" class="file-input-field" style="display:none;">
+                    <label for="file-upload" class="upload-btn">Choose File</label>
+                </div>
+                <!-- TTL Section -->
+                <div class="ttl-control">
+                    <label for="ttl">Time To Live (TTL)</label>
+                    <div class="ttl-input-group">
+                        <input type="number" id="ttl" min="0" value="60">
+                        <span class="ttl-unit">seconds</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Upload Button OUTSIDE the box -->
+            <button id="upload-button" class="upload-submit-btn" disabled>Upload File</button>
+        </section>
+
+        <!-- Animation UI on the right -->
+        <section class="inline-simulation-panel">
+            <div id="status" class="status">Status: Waiting for Request...</div>
+            <div class="animation-container">
+                <div id="cpu-wrapper">
+                    <div id="cpu">CPU</div>
+                </div>
+                <p class="h-file" id="h-file">📦</p>
+                <div id="lines-container">
+                    <div id="cpu-cache-line" class="line"></div>
+                    <div id="cpu-memory-line" class="line"></div>
+                </div>
+                <div id="cache-memory-wrapper">
+                    <div id="cache">Cache</div>
+                    <div id="memory">Main Memory</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+        
+        <section class="slider-panel">
+            <div class="slider-section">
+                <div class="cache-control">
+                    <div class="cache-size-header">
+                        <label for="cache-slider">Cache Size</label>
+                        <span class="current-size">1MB</span>
+                    </div>
+                    <!-- Add cache usage info here -->
+                    <div class="cache-usage-info">
+                        <span class="cache-used">Used: 0B</span>
+                        <span class="cache-left">Left: 1MB</span>
+                    </div>
+                    <input type="range" 
+                           id="cache-slider" 
+                           min="10240" 
+                           max="41943040" 
+                           value="1048576" 
+                           step="10240">
+                    <div class="slider-info">
+                        <span class="size-label min">10KB</span>
+                        
+                        <span class="size-label max">40MB</span>
+                    </div>
+                    <p class="size-description">Adjust the cache size between 10KB and 40MB</p>
+                    <button id="submit-cache" class="submit-btn">Apply Cache Settings</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid-container">
+            <section class="cache-panel expandable">
+                <div class="panel-header">
+                    <div class="header-content">
+                        <h2>Currently Cached Files</h2>
+                        <div class="cache-space-info">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <button class="clear-btn">Clear Cache</button>
+                </div>
+                <div class="panel-content empty-state">
+                    <p>No files currently cached</p>
+                </div>
+            </section>
+
+            <section class="evicted-panel expandable">
+    <div class="panel-header">
+        <h2>Recently Evicted (LRU)</h2>
+    </div>
+    <div class="panel-content">
+        <ul id="evicted-list">
+            <li class="empty-state">No evicted files</li>
+        </ul>
+    </div>
+</section>
+
+        </div>
+
+        <section class="logs-panel">
+            <h2>Operation Log</h2>
+            <div class="table-container" border="2">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Operation</th>
+                            <th>Status</th>
+                            <th>Size</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="empty-state">
+                            <td colspan="5">No operations logged</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="visualization-section">
+            <h2>Performance Matrice</h2>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Cache Performance</h3>
+                    </div>
+                    <canvas id="hitsChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Cached Files</h3>
+                    </div>
+                    <canvas id="filesChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add this button after your stats panel or wherever it fits best -->
+        
+
+        <!-- Add this modal at the end of your <main> (before </main>) -->
+        <div class="simulation-modal hidden" id="simulationModal">
+            <div class="simulation-overlay"></div>
+            <div class="simulation-content">
+                <div class="simulation-header">
+                    <h2>Cache Simulation: Hit or Miss</h2>
+                    <button class="close-simulation" id="closeSimulation">&times;</button>
+                </div>
+                <div class="simulation-body">
+                    <div id="status" class="status">Status: Waiting for Request...</div>
+                    <div class="simulation-controls" style="text-align:center;margin:1em 0;">
+                        <button class="hit" onclick="startSimulation(true)">Cache Hit</button>
+                        <button class="miss" onclick="startSimulation(false)">Cache Miss</button>
+                    </div>
+                    <div class="animation-container">
+                        <div id="cpu-wrapper">
+                            <div id="cpu">CPU</div>
+                        </div>
+                        <p class="h-file" id="h-file">📦</p>
+                        <p class="m-file">📦</p>
+                        <div id="lines-container">
+                            <div id="cpu-cache-line" class="line"></div>
+                            <div id="cpu-memory-line" class="line"></div>
+                        </div>
+                        <div id="cache-memory-wrapper">
+                            <div id="cache">Cache</div>
+                            <div id="memory">Main Memory</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="main.js"></script>
+</body>
+</html>
